@@ -30,6 +30,7 @@ import math
 
 
 ### Question 1
+# my_root = 'C:/Users/esloe/OneDrive/Desktop/CSE 158/cse-158-HWs/datasets/'
 # dataset = []
 # f = gzip.open(my_root + 'fantasy_10000.json.gz')
 # for line in f:
@@ -134,7 +135,7 @@ def featureQ3(datum, maxLen):
     return feature_list
 
 
-# In[21]:
+# In[12]:
 
 
 def Q3(dataset):
@@ -190,44 +191,94 @@ def Q4(dataset):
 # In[15]:
 
 
-def featureQ5(datum):
-    list = []
-    # Implement
-
-
-# In[16]:
-
-
-def Q5(dataset, feat_func):
-    # Implement
-    return TP, TN, FP, FN, BER
+# my_root = 'C:/Users/esloe/OneDrive/Desktop/CSE 158/cse-158-HWs/datasets/'
+# datasetB = []
+# f = open(my_root + 'beer_50000.json')
+# for line in f:
+#   datasetB.append(eval(line))
 
 
 # In[17]:
 
 
-### Question 6
+def featureQ5(datum):
+    a = [1, len(datum['review/text'])]
+    return a
+    # Implement
 
 
 # In[18]:
 
 
-def Q6(dataset):
+def Q5(dataset, feat_func):
     # Implement
-    return precs
+    y = [d['review/overall'] >= 4 for d in dataset]
+    X = [feat_func(d) for d in dataset]
+
+    model = linear_model.LogisticRegression(class_weight='balanced')
+    model.fit(X,y)
+
+    predictions = model.predict(X)
+
+    TP, TN, FP, FN, i = 0,0,0,0,0
+
+    while(i < len(y)):
+        if y[i] and predictions[i]:
+            TP += 1
+        elif y[i] and not predictions[i]:
+            FN += 1
+        elif not y[i] and not predictions[i]:
+            TN += 1
+        else:
+            FP += 1
+        i += 1
+    BER = 1/2 * ((FP/(FP+TN) + FN/(FN+TP)))
+
+    return TP, TN, FP, FN, BER
 
 
 # In[19]:
 
 
-### Question 7
+### Question 6
 
 
 # In[20]:
 
 
+def Q6(dataset):
+    # Implement
+    y = [d['review/overall'] >= 4 for d in dataset]
+    X = [featureQ5(d) for d in dataset]
+
+    model = linear_model.LogisticRegression(class_weight='balanced')
+    model.fit(X,y)
+
+    confidences = model.decision_function(X)
+    sortedByConfidence = list(zip(confidences,y))
+    sortedByConfidence.sort(reverse=True)
+
+    precs = []
+    specified_precisions = [1,100,1000,10000]
+    for k in specified_precisions:
+        retrievedLabels = [x[1] for x in sortedByConfidence[:k]]
+        precs.append(sum(retrievedLabels) / len(retrievedLabels))
+
+    return precs
+
+
+# In[21]:
+
+
+### Question 7
+
+
+# In[27]:
+
+
 def featureQ7(datum):
-    list = []
+    a = [1, datum['review/palate'], datum['review/taste']]
+    return a
     # Implement (any feature vector which improves performance over Q5)
 
 
